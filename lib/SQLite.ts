@@ -85,6 +85,15 @@ class SQLite {
       console.log("DeleteHoaDonChiTiet_byIdQuyDoi ", error);
     }
   };
+  DeleteHoaDonChiTiet_byId = async (db: sqlite.SQLiteDatabase, id: string) => {
+    try {
+      await db.runAsync(`DELETE from tblHoaDonChiTiet where id= $id`, {
+        $id: id,
+      });
+    } catch (error) {
+      console.log("DeleteHoaDonChiTiet_byIdQuyDoi ", error);
+    }
+  };
   InsertTo_HoaDon = async (db: sqlite.SQLiteDatabase, itemNew: HoaDonDto) => {
     try {
       await db.runAsync(
@@ -92,7 +101,7 @@ class SQLite {
         maHoaDon, ngayLapHoaDon,
         tongTienHangChuaChietKhau, ptChietKhauHang, tongChietKhauHangHoa, tongTienHang,
         ptThueHD, tongTienThue, tongTienHDSauVAT, 
-        pTGiamGiaHD, tongGiamGiaHD, chiPhiTraHang, tongThanhToan,chiPhiHD,
+        ptGiamGiaHD, tongGiamGiaHD, chiPhiTraHang, tongThanhToan,chiPhiHD,
         ghiChuHD, trangThai,
         maKhachHang, tenKhachHang, soDienThoai)
         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
@@ -110,7 +119,7 @@ class SQLite {
         itemNew?.ptThueHD ?? 0,
         itemNew?.tongTienThue ?? 0,
         itemNew?.tongTienHDSauVAT ?? 0,
-        itemNew?.pTGiamGiaHD ?? 0,
+        itemNew?.ptGiamGiaHD ?? 0,
         itemNew?.tongGiamGiaHD ?? 0,
         itemNew?.chiPhiTraHang ?? 0,
         itemNew?.tongThanhToan ?? 0,
@@ -140,7 +149,7 @@ class SQLite {
           ptThueHD = $ptThueHD, 
           tongTienThue = $tongTienThue, 
           tongTienHDSauVAT = $tongTienHDSauVAT, 
-          pTGiamGiaHD = $pTGiamGiaHD, 
+          ptGiamGiaHD = $ptGiamGiaHD, 
           tongGiamGiaHD = $tongGiamGiaHD, 
           chiPhiTraHang = $chiPhiTraHang, 
           tongThanhToan = $tongThanhToan, 
@@ -160,7 +169,7 @@ class SQLite {
           $ptThueHD: itemNew?.ptThueHD,
           $tongTienThue: itemNew?.tongTienThue,
           $tongTienHDSauVAT: itemNew?.tongTienHDSauVAT,
-          $pTGiamGiaHD: itemNew?.pTGiamGiaHD,
+          $ptGiamGiaHD: itemNew?.ptGiamGiaHD,
           $tongGiamGiaHD: itemNew?.tongGiamGiaHD,
           $chiPhiTraHang: itemNew?.chiPhiTraHang,
           $tongThanhToan: itemNew?.tongThanhToan,
@@ -212,12 +221,12 @@ class SQLite {
       const thanhtien = (itemNew?.donGiaTruocCK ?? 0) * (itemNew?.soLuong ?? 0);
       await db.runAsync(
         `UPDATE tblHoaDonChiTiet SET soLuong = ?, thanhTienTruocCK = ?,  thanhTienSauCK = ?, thanhTienSauVAT = ?
-      WHERE idDonViQuyDoi = ?`,
+      WHERE id = ?`,
         itemNew?.soLuong,
         thanhtien,
         thanhtien,
         thanhtien,
-        itemNew?.idDonViQuyDoi
+        itemNew?.id
       );
     } catch (error) {
       console.log("UpdateTo_HoaDonChiTiet ", error);
@@ -288,9 +297,9 @@ class SQLite {
         hd.tongTienThue = tongTienThue;
         hd.tongTienHDSauVAT = sumThanhTienSauCK - tongTienThue;
 
-        const ptGiamGiaHD = sumThanhTienSauCK > 0 ? hd?.pTGiamGiaHD ?? 0 : 0;
+        const ptGiamGiaHD = sumThanhTienSauCK > 0 ? hd?.ptGiamGiaHD ?? 0 : 0;
         let tongGiamHD = sumThanhTienSauCK > 0 ? hd?.tongGiamGiaHD ?? 0 : 0;
-        if (hd?.pTGiamGiaHD > 0) {
+        if (hd?.ptGiamGiaHD > 0) {
           tongGiamHD = (ptGiamGiaHD * hd.tongTienHDSauVAT) / 100;
         }
         hd.tongThanhToan = hd.tongTienHDSauVAT - tongGiamHD;

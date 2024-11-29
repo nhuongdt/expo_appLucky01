@@ -6,6 +6,10 @@ export enum ListBottomTab {
 
 export type BottomTabParamList = {
   TempInvoice: { idHoaDon: string; maHoaDon: string };
-  TempInvoiceDetails: { idHoaDon: string; maHoaDon: string };
+  TempInvoiceDetails: {
+    idHoaDon: string;
+    maHoaDon: string;
+    tongThanhToan?: number;
+  };
   Product: { idHoaDon: string; maHoaDon: string; tongThanhToan?: number };
 };

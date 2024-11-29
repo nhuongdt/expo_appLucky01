@@ -73,7 +73,7 @@ export default function RootLayout() {
   const Stack = createNativeStackNavigator();
   return (
     <SQLiteProvider databaseName="luckybeauty.db" onInit={migrateDbIfNeeded}>
-      <SafeAreaView style={{ flex: 1 }}>
+      <SafeAreaView style={{ flex: 1, backgroundColor: "rgb(245, 247, 244)" }}>
         <StatusBar
           barStyle="dark-content" // Kiểu chữ cho thanh trạng thái
           backgroundColor="#f8f8f8" // Màu nền của thanh trạng thái

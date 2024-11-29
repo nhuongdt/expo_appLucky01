@@ -24,14 +24,14 @@ export default function SaleLayout() {
     <Tabs.Navigator
       initialRouteName="TempInvoice"
       screenOptions={{
-        tabBarActiveTintColor: "tomato",
+        tabBarActiveTintColor: "red",
         tabBarInactiveTintColor: "gray",
         headerStyle: {
-          backgroundColor: "yellow",
+          backgroundColor: "#FFF4E5",
         },
         headerTitleAlign: "center",
         headerTitleStyle: {
-          color: "red",
+          color: "black",
           fontWeight: 400,
           fontSize: 16,
           textAlign: "center",
@@ -39,7 +39,10 @@ export default function SaleLayout() {
         headerTintColor: "white",
         headerShadowVisible: false,
         tabBarStyle: {
-          backgroundColor: "#ebebe0",
+          backgroundColor: "#FFF4E5",
+        },
+        tabBarLabelStyle: {
+          fontSize: 14,
         },
       }}
     >
@@ -74,6 +77,7 @@ export default function SaleLayout() {
           ),
           headerLeft: () => (
             <Pressable
+              style={{ padding: 16 }}
               onPress={() => {
                 navigation.navigate(ListBottomTab.TEMP_INVOICE, {
                   tongThanhToan: route.params?.tongThanhToan,
@@ -84,7 +88,16 @@ export default function SaleLayout() {
             </Pressable>
           ),
           headerRight: () => (
-            <Pressable>
+            <Pressable
+              style={{ padding: 16 }}
+              onPress={() => {
+                navigation.navigate(ListBottomTab.TEMP_INVOICE_DETAIL, {
+                  idHoaDon: route.params?.idHoaDon,
+                  maHoaDon: route.params?.maHoaDon,
+                  tongThanhToan: route.params?.tongThanhToan,
+                });
+              }}
+            >
               <Icon name="arrow-forward-ios" type="material" />
             </Pressable>
           ),
@@ -93,9 +106,24 @@ export default function SaleLayout() {
       <Tabs.Screen
         name="TempInvoiceDetails"
         component={TempInvoiceDetails}
-        options={({ route }: any) => ({
+        options={({ navigation, route }: any) => ({
           title: `${route.params?.maHoaDon}`,
           tabBarButton: () => null,
+          tabBarStyle: { display: "none" }, // ẩn tabbar
+          headerLeft: () => (
+            <Pressable
+              style={{ padding: 16 }}
+              onPress={() => {
+                navigation.navigate(ListBottomTab.PRODUCT, {
+                  idHoaDon: route.params?.idHoaDon,
+                  maHoaDon: route.params?.maHoaDon,
+                  tongThanhToan: route.params?.tongThanhToan,
+                });
+              }}
+            >
+              <Icon name="arrow-back-ios" type="material" />
+            </Pressable>
+          ),
         })}
       />
     </Tabs.Navigator>

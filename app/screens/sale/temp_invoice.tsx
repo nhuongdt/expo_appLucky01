@@ -1,4 +1,4 @@
-import { View, StyleSheet, Text, Pressable, ScrollView } from "react-native";
+import { View, StyleSheet, Pressable, ScrollView } from "react-native";
 import { Icon, Button } from "@rneui/themed";
 import { useEffect, useRef, useContext, useState, FC } from "react";
 import { useSQLiteContext } from "expo-sqlite";
@@ -12,6 +12,7 @@ import {
   BottomTabParamList,
   ListBottomTab,
 } from "@/app/navigation/BottomTabParamList";
+import { ThemedText } from "@/components/ThemedText";
 
 type TempInvoiceProps = NativeStackNavigationProp<
   BottomTabParamList,
@@ -55,6 +56,7 @@ const TempInvoice = () => {
       id: newId,
       maHoaDon: `Hóa đơn ${lstHoaDon?.length + 1}`,
     });
+    await SQLite.InsertTo_HoaDon(db, newHD);
 
     navigation.navigate(ListBottomTab.PRODUCT, {
       idHoaDon: newId,
@@ -74,6 +76,7 @@ const TempInvoice = () => {
     navigation.navigate(ListBottomTab.TEMP_INVOICE_DETAIL, {
       idHoaDon: item?.id,
       maHoaDon: item?.maHoaDon,
+      tongThanhToan: item?.tongThanhToan,
     });
     setIdHoaDonChosing(item?.id);
   };
@@ -104,7 +107,11 @@ const TempInvoice = () => {
 
   return (
     <View style={styles.container}>
-      <Button onPress={createNewInvoice}>
+      <Button
+        onPress={createNewInvoice}
+        titleStyle={{ fontSize: 18, color: "white" }}
+        buttonStyle={{ backgroundColor: "#EA9B66" }}
+      >
         <Icon name="add" color="white" />
         Tạo hóa đơn
       </Button>
@@ -123,8 +130,6 @@ const TempInvoice = () => {
                   flexDirection: "row",
                   alignItems: "center",
                   justifyContent: "space-between",
-                  borderBottomWidth: 1,
-                  borderBlockColor: "#ccc",
                 }}
               >
                 <Icon
@@ -137,28 +142,37 @@ const TempInvoice = () => {
                 />
                 <View style={stylesInvoiceItem.boxCenter}>
                   <View style={{ flex: 2 }}>
-                    <Text style={{ fontWeight: 500 }}>{item?.maHoaDon}</Text>
-                    <Text>{format(new Date(item.ngayLapHoaDon), "HH:mm")}</Text>
+                    <ThemedText style={{ fontWeight: 500 }}>
+                      {item?.maHoaDon}
+                    </ThemedText>
+                    <ThemedText
+                      style={{ color: "rgb(178, 183, 187)", fontSize: 14 }}
+                    >
+                      {format(new Date(item.ngayLapHoaDon), "HH:mm")}
+                    </ThemedText>
                   </View>
                   <View style={{ flex: 3 }}>
-                    <Text style={{ fontWeight: 500, textAlign: "right" }}>
+                    <ThemedText style={{ fontWeight: 500, textAlign: "right" }}>
                       {new Intl.NumberFormat("vi-VN").format(
                         item?.tongThanhToan ?? 0
                       )}
-                    </Text>
-                    <Text
+                    </ThemedText>
+                    <ThemedText
                       ellipsizeMode="tail"
                       numberOfLines={1}
-                      style={{ textAlign: "right" }}
+                      style={{
+                        textAlign: "right",
+                        color: "rgb(178, 183, 187)",
+                      }}
                     >
                       {item?.tenKhachHang}
-                    </Text>
+                    </ThemedText>
                   </View>
                 </View>
 
                 <Icon
-                  type="material-community"
-                  name="pencil-circle-outline"
+                  type="antdesign"
+                  name="edit"
                   size={24}
                   style={{ flex: 1 }}
                   onPress={() => gotoEdit(item)}
@@ -175,19 +189,15 @@ export default TempInvoice;
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "white",
+    backgroundColor: "rgb(245, 247, 244)",
   },
 });
 const stylesInvoiceItem = StyleSheet.create({
   container: {
-    backgroundColor: "rgba(0,0,0,.03)",
+    backgroundColor: "white",
     padding: 10,
     borderBottomColor: "#ccc",
     borderBottomWidth: 1,
-    borderRadius: 8,
-    shadowColor: "red",
-    shadowOpacity: 0.5,
-    shadowRadius: 4,
   },
   boxCenter: {
     flexDirection: "row",

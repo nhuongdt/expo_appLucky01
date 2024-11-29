@@ -20,7 +20,7 @@ export interface IHoaDonDto extends ICustomerBasic {
   ptThueHD: number;
   tongTienThue: number;
   tongTienHDSauVAT: number;
-  pTGiamGiaHD: number;
+  ptGiamGiaHD: number;
   tongGiamGiaHD: number;
   chiPhiTraHang: number;
   tongThanhToan: number;
@@ -65,7 +65,7 @@ export class HoaDonDto implements IHoaDonDto {
   ptThueHD: number;
   tongTienThue: number;
   tongTienHDSauVAT: number;
-  pTGiamGiaHD: number;
+  ptGiamGiaHD: number;
   tongGiamGiaHD: number;
   chiPhiTraHang: number;
   tongThanhToan: number;
@@ -92,7 +92,7 @@ export class HoaDonDto implements IHoaDonDto {
     ptThueHD = 0,
     tongTienThue = 0,
     tongTienHDSauVAT = 0,
-    pTGiamGiaHD = 0,
+    ptGiamGiaHD = 0,
     tongGiamGiaHD = 0,
     chiPhiTraHang = 0,
     tongThanhToan = 0,
@@ -119,7 +119,7 @@ export class HoaDonDto implements IHoaDonDto {
     this.ptThueHD = ptThueHD;
     this.tongTienThue = tongTienThue;
     this.tongTienHDSauVAT = tongTienHDSauVAT;
-    this.pTGiamGiaHD = pTGiamGiaHD;
+    this.ptGiamGiaHD = ptGiamGiaHD;
     this.tongGiamGiaHD = tongGiamGiaHD;
     this.chiPhiTraHang = chiPhiTraHang;
     this.tongThanhToan = tongThanhToan;

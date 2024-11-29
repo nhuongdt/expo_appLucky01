@@ -1,30 +1,30 @@
-import { View, StyleSheet, Text, FlatList, Pressable } from "react-native";
-import { useContext, useEffect, useRef, useState } from "react";
+import { View, StyleSheet, FlatList, Pressable } from "react-native";
+import { useEffect, useRef, useState } from "react";
+import { useNavigation } from "@react-navigation/native";
+import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import { Icon, SearchBar } from "@rneui/themed";
 import { useSQLiteContext } from "expo-sqlite";
 import uuid from "react-native-uuid";
+import SQLite from "@/lib/SQLite";
+import { InvoiceStatus } from "@/enum/InvoiceStatus";
+import { IPageResult } from "@/api/commonDto/pageResult";
 import ProductService from "@/api/service/product/ProductService";
 import {
   IParamSearchProductDto,
   IProductBasic,
 } from "@/api/service/product/dto";
-import { IPageResult } from "@/api/commonDto/pageResult";
 import {
   HoaDonDto,
   IHoaDonChiTietDto,
   IHoaDonDto,
 } from "@/api/service/hoadon/dto";
-import { InvoiceStatus } from "@/enum/InvoiceStatus";
-import SQLite from "@/lib/SQLite";
 import ModalAddGioHang from "@/components/thu_ngan/modal_add_gio_hang";
-import { SaleInvoiceContext } from "@/app/contexts/SaleInvoiceContext";
-import { useNavigation } from "@react-navigation/native";
-import { BottomTabScreenProps } from "@react-navigation/bottom-tabs";
-import { NativeStackNavigationProp } from "@react-navigation/native-stack";
+
 import {
   BottomTabParamList,
   ListBottomTab,
 } from "@/app/navigation/BottomTabParamList";
+import { ThemedText } from "@/components/ThemedText";
 
 type ProductSaleProps = NativeStackNavigationProp<
   BottomTabParamList,
@@ -46,13 +46,13 @@ export const ItemProduct = ({ item, choseItem }: IPropItemProduct) => {
       onPress={() => choseItem(item)}
     >
       <View style={{ gap: 8 }}>
-        <Text>{item.tenHangHoa}</Text>
-        <Text style={{ color: "green" }}>{item.maHangHoa}</Text>
+        <ThemedText>{item.tenHangHoa}</ThemedText>
+        <ThemedText style={{ color: "green" }}>{item.maHangHoa}</ThemedText>
       </View>
       <View style={{ gap: 8 }}>
-        <Text style={{ fontWeight: 500 }}>
+        <ThemedText style={{ fontWeight: 500 }}>
           {new Intl.NumberFormat("vi-VN").format(item.giaBan)}
-        </Text>
+        </ThemedText>
       </View>
     </Pressable>
   );
@@ -71,7 +71,11 @@ const styleItemProduct = StyleSheet.create({
 const ProductSale = ({ route }: any) => {
   const firstLoad = useRef(true);
   const db = useSQLiteContext();
-  const { idHoaDon, maHoaDon } = route?.params;
+  const {
+    idHoaDon = uuid.v4().toString(),
+    maHoaDon = "Hóa đơn 1",
+    tongThanhToan = 0,
+  } = route?.params || {};
   const navigation = useNavigation<ProductSaleProps>();
   const [isShowModalAddGioHang, setIsShowModalAddGioHang] = useState(false);
   const [txtSearchProduct, setTxtSearchProduct] = useState("");
@@ -86,37 +90,18 @@ const ProductSale = ({ route }: any) => {
     IPageResult<IProductBasic>
   >({ items: [], totalCount: 0, totalPage: 0 });
 
-  const [hoadonOpen, setHoaDonOpen] = useState<IHoaDonDto>({
-    id: idHoaDon,
-  } as IHoaDonDto);
-
   const [ctDoing, setCTDoing] = useState<IHoaDonChiTietDto>(
     {} as IHoaDonChiTietDto
   );
 
   const PageLoad = async () => {};
 
-  const getDataHoaDon_fromCache = async () => {
-    const itemHD = await SQLite.GetHoaDon_byId(db, idHoaDon);
-
-    if (itemHD == null) {
-      const newObj = new HoaDonDto({
-        id: idHoaDon,
-        maHoaDon: maHoaDon,
-      });
-      await SQLite.InsertTo_HoaDon(db, newObj);
-      setHoaDonOpen({ ...newObj });
-    } else {
-      setHoaDonOpen({ ...itemHD });
-    }
-  };
-
   useEffect(() => {
     PageLoad();
   }, []);
 
   useEffect(() => {
-    getDataHoaDon_fromCache();
+    //creatwNewHD_ifNotExist();
   }, [idHoaDon]);
 
   const getListProduct = async () => {
@@ -128,6 +113,24 @@ const ProductSale = ({ route }: any) => {
       items: data?.items,
       totalCount: data?.totalCount,
     });
+  };
+
+  // sử dụng khi chưa click tạo hóa đơn, mà chọn tab Sản phẩm
+  const creatwNewHD_ifNotExist = async () => {
+    const itemHD = await SQLite.GetHoaDon_byId(db, idHoaDon);
+
+    if (itemHD == null) {
+      const newObj = new HoaDonDto({
+        id: idHoaDon,
+        maHoaDon: maHoaDon,
+      });
+      await SQLite.InsertTo_HoaDon(db, newObj);
+      navigation.setParams({
+        maHoaDon: maHoaDon,
+        idHoaDon: idHoaDon,
+        tongThanhToan: 0,
+      });
+    }
   };
 
   useEffect(() => {
@@ -212,11 +215,8 @@ const ProductSale = ({ route }: any) => {
     // delete & add again
     const idQuyDoi = ctAfter?.idDonViQuyDoi;
     await SQLite.DeleteHoaDonChiTiet_byIdQuyDoi(db, idHoaDon, idQuyDoi);
-    const ctafterdelete = await SQLite.GetChiTietHoaDon_byIdHoaDon(
-      db,
-      idHoaDon
-    );
     await SQLite.InsertTo_HoaDonChiTiet(db, ctAfter);
+    //    const cthd = await SQLite.GetChiTietHoaDon_byIdHoaDon(db, idHoaDon);
 
     // update tocache
     const hdAfter = await SQLite.UpdateHD_fromCTHD(db, idHoaDon);
@@ -257,7 +257,7 @@ const ProductSale = ({ route }: any) => {
         >
           <View style={styles.flexRow}>
             <Icon type="font-awesome-5" name="user" size={16} />
-            <Text style={{ paddingLeft: 10 }}>Khach le</Text>
+            <ThemedText style={{ paddingLeft: 10 }}>Khach le</ThemedText>
           </View>
           <Icon type="material-community" name="chevron-double-right" />
         </View>
@@ -270,11 +270,11 @@ const ProductSale = ({ route }: any) => {
         >
           <View style={styles.flexRow}>
             <Icon type="ionicon" name="filter" />
-            <Text style={{ paddingLeft: 8 }}>Tất cả</Text>
+            <ThemedText style={{ paddingLeft: 8 }}>Tất cả</ThemedText>
           </View>
           <View style={styles.flexRow}>
             <Icon type="ionicon" name="checkmark" />
-            <Text style={{ paddingLeft: 8 }}>Chọn nhiều</Text>
+            <ThemedText style={{ paddingLeft: 8 }}>Chọn nhiều</ThemedText>
           </View>
         </View>
         <FlatList
