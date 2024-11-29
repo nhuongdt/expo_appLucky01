@@ -234,6 +234,20 @@ class SQLite {
     }
     return null;
   };
+  GetChiTietHoaDon_byIdHoaDon = async (
+    db: sqlite.SQLiteDatabase,
+    idHoaDon: string
+  ): Promise<IHoaDonChiTietDto[]> => {
+    try {
+      const lst = await db.getAllAsync<IHoaDonChiTietDto>(
+        `SELECT * FROM tblHoaDonChiTiet where IdHoaDon = '${idHoaDon}'`
+      );
+      return lst;
+    } catch (error) {
+      console.log("GetChiTietHoaDon_byIdHoaDon ", error);
+    }
+    return [];
+  };
   GetFirstRow_HoaDonChiTiet = async (
     db: sqlite.SQLiteDatabase,
     idHoaDon: string,
@@ -254,9 +268,7 @@ class SQLite {
     idHoaDon: string
   ): Promise<IHoaDonDto | null> => {
     try {
-      const lst = await db.getAllAsync<IHoaDonChiTietDto>(
-        `SELECT * FROM tblHoaDonChiTiet where IdHoaDon = '${idHoaDon}'`
-      );
+      const lst = await this.GetChiTietHoaDon_byIdHoaDon(db, idHoaDon);
       let tongTienHangChuaChietKhau = 0,
         tongChietKhauHang = 0,
         tongTienThue = 0;
@@ -267,9 +279,7 @@ class SQLite {
         tongTienThue += element.soLuong * (element?.tienThue ?? 0);
       }
 
-      const hd = await db.getFirstAsync<IHoaDonDto>(
-        `SELECT * FROM tblHoaDon where Id = '${idHoaDon}'`
-      );
+      const hd = await this.GetHoaDon_byId(db, idHoaDon);
       if (hd != null) {
         const sumThanhTienSauCK = tongTienHangChuaChietKhau - tongChietKhauHang;
         hd.tongTienHangChuaChietKhau = tongTienHangChuaChietKhau;

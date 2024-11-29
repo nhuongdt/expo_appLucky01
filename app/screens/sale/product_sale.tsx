@@ -1,15 +1,7 @@
-import {
-  View,
-  StyleSheet,
-  Text,
-  SafeAreaView,
-  FlatList,
-  StatusBar,
-  Pressable,
-} from "react-native";
-import { Icon } from "@rneui/themed";
-import { SearchBar } from "@rneui/themed";
+import { View, StyleSheet, Text, FlatList, Pressable } from "react-native";
 import { useContext, useEffect, useRef, useState } from "react";
+import { Icon, SearchBar } from "@rneui/themed";
+import { useSQLiteContext } from "expo-sqlite";
 import uuid from "react-native-uuid";
 import ProductService from "@/api/service/product/ProductService";
 import {
@@ -17,23 +9,27 @@ import {
   IProductBasic,
 } from "@/api/service/product/dto";
 import { IPageResult } from "@/api/commonDto/pageResult";
-import ModalAddGioHang from "@/components/thu_ngan/modal_add_gio_hang";
 import {
   HoaDonDto,
   IHoaDonChiTietDto,
   IHoaDonDto,
 } from "@/api/service/hoadon/dto";
 import { InvoiceStatus } from "@/enum/InvoiceStatus";
-import { LoaiChungTu } from "@/enum/LoaiChungTu";
-import { format } from "date-fns";
 import SQLite from "@/lib/SQLite";
+import ModalAddGioHang from "@/components/thu_ngan/modal_add_gio_hang";
+import { SaleInvoiceContext } from "@/app/contexts/SaleInvoiceContext";
+import { useNavigation } from "@react-navigation/native";
+import { BottomTabScreenProps } from "@react-navigation/bottom-tabs";
+import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import {
-  SQLiteProvider,
-  useSQLiteContext,
-  type SQLiteDatabase,
-} from "expo-sqlite";
-import { useNavigation } from "expo-router";
-import { HoaDonContext } from "./_layout";
+  BottomTabParamList,
+  ListBottomTab,
+} from "@/app/navigation/BottomTabParamList";
+
+type ProductSaleProps = NativeStackNavigationProp<
+  BottomTabParamList,
+  ListBottomTab.PRODUCT
+>;
 
 type IPropItemProduct = {
   item: IProductBasic;
@@ -72,12 +68,11 @@ const styleItemProduct = StyleSheet.create({
   },
 });
 
-const SanPham = () => {
+const ProductSale = ({ route }: any) => {
   const firstLoad = useRef(true);
   const db = useSQLiteContext();
-  const navigation = useNavigation();
-  const { hoadon, setHoaDon } = useContext(HoaDonContext); // Lấy hoadon từ context
-
+  const { idHoaDon, maHoaDon } = route?.params;
+  const navigation = useNavigation<ProductSaleProps>();
   const [isShowModalAddGioHang, setIsShowModalAddGioHang] = useState(false);
   const [txtSearchProduct, setTxtSearchProduct] = useState("");
   const [paramSearchProduct, setParamSearchProduct] =
@@ -92,7 +87,7 @@ const SanPham = () => {
   >({ items: [], totalCount: 0, totalPage: 0 });
 
   const [hoadonOpen, setHoaDonOpen] = useState<IHoaDonDto>({
-    id: hoadon.id,
+    id: idHoaDon,
   } as IHoaDonDto);
 
   const [ctDoing, setCTDoing] = useState<IHoaDonChiTietDto>(
@@ -102,17 +97,17 @@ const SanPham = () => {
   const PageLoad = async () => {};
 
   const getDataHoaDon_fromCache = async () => {
-    const itemHD = await SQLite.GetHoaDon_byId(db, hoadon?.id);
+    const itemHD = await SQLite.GetHoaDon_byId(db, idHoaDon);
 
     if (itemHD == null) {
       const newObj = new HoaDonDto({
-        id: hoadon?.id,
-        maHoaDon: hoadon?.maHoaDon,
+        id: idHoaDon,
+        maHoaDon: maHoaDon,
       });
       await SQLite.InsertTo_HoaDon(db, newObj);
       setHoaDonOpen({ ...newObj });
     } else {
-      setHoaDonOpen({ ...hoadon });
+      setHoaDonOpen({ ...itemHD });
     }
   };
 
@@ -122,7 +117,7 @@ const SanPham = () => {
 
   useEffect(() => {
     getDataHoaDon_fromCache();
-  }, [hoadon?.id]);
+  }, [idHoaDon]);
 
   const getListProduct = async () => {
     const param = { ...paramSearchProduct };
@@ -151,7 +146,6 @@ const SanPham = () => {
   }, [txtSearchProduct]);
 
   const choseProduct = async (item: IProductBasic) => {
-    const idHoaDon = hoadon?.id;
     const idQuyDoi = item?.idDonViQuyDoi;
 
     await SQLite.CreateTable_HoaDon(db);
@@ -166,6 +160,7 @@ const SanPham = () => {
     if (itemCTHD != null) {
       setCTDoing({
         ...ctDoing,
+        id: itemCTHD?.id,
         stt: itemCTHD?.stt ?? 1,
         idHoaDon: idHoaDon,
         idDonViQuyDoi: idQuyDoi,
@@ -216,20 +211,20 @@ const SanPham = () => {
 
     // delete & add again
     const idQuyDoi = ctAfter?.idDonViQuyDoi;
-    await SQLite.DeleteHoaDonChiTiet_byIdQuyDoi(
+    await SQLite.DeleteHoaDonChiTiet_byIdQuyDoi(db, idHoaDon, idQuyDoi);
+    const ctafterdelete = await SQLite.GetChiTietHoaDon_byIdHoaDon(
       db,
-      ctAfter?.idHoaDon,
-      idQuyDoi
+      idHoaDon
     );
     await SQLite.InsertTo_HoaDonChiTiet(db, ctAfter);
 
     // update tocache
-    const hdAfter = await SQLite.UpdateHD_fromCTHD(db, hoadon?.id);
+    const hdAfter = await SQLite.UpdateHD_fromCTHD(db, idHoaDon);
     if (hdAfter) {
-      setHoaDon({ ...hdAfter });
+      navigation.setParams({
+        tongThanhToan: hdAfter?.tongThanhToan ?? 0,
+      });
     }
-
-    // navigation.goBack();
   };
 
   return (
@@ -294,7 +289,7 @@ const SanPham = () => {
     </View>
   );
 };
-export default SanPham;
+export default ProductSale;
 const styles = StyleSheet.create({
   container: {
     flex: 1,

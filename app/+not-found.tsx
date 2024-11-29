@@ -1,16 +1,14 @@
-import { Link, Stack } from "expo-router";
-import { StyleSheet, Text, View } from "react-native";
+import { Button } from "react-native";
+import { StyleSheet, View } from "react-native";
 
-export default function NotFoundScreen() {
+export default function NotFoundScreen({ navigation }: any) {
   return (
-    <>
-      <Stack.Screen options={{ title: "Page not found" }} />
-      <View style={styles.container}>
-        <Link href={"/"} style={styles.button}>
-          Go back to Home screen!
-        </Link>
-      </View>
-    </>
+    <View style={styles.container}>
+      <Button
+        title=" Go back to Home screen!"
+        onPress={() => navigation.navigate("navigation/sale_layout")}
+      />
+    </View>
   );
 }
 const styles = StyleSheet.create({
